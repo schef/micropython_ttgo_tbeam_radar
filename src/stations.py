@@ -1,35 +1,42 @@
-from math import sin, cos, sqrt, atan2, radians
 from specific import *
+import pwm
+import oled
+from gps import get_location
+from common import get_millis, millis_passed
 
-# approximate radius of earth in km
-R = 6373.0
-
-
+last_location_timestamp = 0
 
 stations = [
-    StationCoordinate(46.370007, 16.374832, "Nedelisce, Varazdinska ulica", 50),
-    StationCoordinate(46.341629, 16.361911, "Puscine, Cakovecka ulica", 60),
-    StationCoordinate(46.348843, 16.411857, "Strahoninec, Poleve", 50)
+    Station(46.370007, 16.374832, "Nedelisce, Var.", 50),
+    Station(46.341629, 16.361911, "Puscine", 60),
+    Station(46.348843, 16.411857, "Poleve", 50)
 ]
 
-def get_distance(coordinate_from, coordinate_to):
-    dlon = coordinate_from.rlon - coordinate_to.rlon
-    dlat = coordinate_from.rlat - coordinate_to.rlat
-
-    a = sin(dlat / 2)**2 + cos(coordinate_to.rlat) * \
-        cos(coordinate_from.rlat) * sin(dlon / 2)**2
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
-
-    distance = R * c
-    return distance
-
-
-def get_nearest_station(coordinate_from):
-    nearest_station = None
-    smallest_distance = 1000.0
-    for station in stations:
-       distance = get_distance(coordinate_from, station) 
-       if distance < smallest_distance:
-           smallest_distance = distance
-           nearest_station = station
-    return nearest_station
+def loop():
+    location = get_location()
+    if location:
+        last_location_timestamp = get_millis()
+        lines = []
+        lines.append("%s:%d" % (get_status(location), location.hacc))
+        lines.append("TIME: %d" % (location.time))
+        lines.append("LAT: %f" % (location.lat))
+        lines.append("LON: %f" % (location.lon))
+        if (get_status(location) in [LocationStatus.BAD, LocationStatus.GOOD]):
+            nearest_station = get_nearest_station(location, stations)
+            distance = get_distance(location, nearest_station)
+            lines.append("%.1fkm in %s" % (distance, nearest_station.name))
+            lines.append("%.1fkm/h" % (location.speed))
+            if (distance < 0.2):
+                if not pwm.is_beep():
+                    pwm.set_beep(True)
+            else:
+                if pwm.is_beep():
+                    pwm.set_beep(False)
+        else:
+            if pwm.is_beep():
+                pwm.set_beep(False)
+        oled.display_lines(lines)
+    else:
+        if millis_passed(last_location_timestamp) > 3000:
+            if pwm.is_beep():
+                pwm.set_beep(False)

@@ -1,26 +1,15 @@
 from utime import sleep_ms
 from struct import unpack
-from common import create_uart
-from oled import display_lines
-from math import radians
-import stations
-from specific import *
-import pwm
+from common import create_uart, get_millis, dump_func
+from specific import Location, get_distance
 
 uart = create_uart(12, 34)
-
-    
-selected_coordinate = 0
-test_coordinate = [
-    GpsCoordinate(46.3880032, 16.4399232, 0, 9, "doma"),
-    GpsCoordinate(46.3691968, 16.4137257, 0, 9, "strahoninec"),
-    GpsCoordinate(46.3486437, 16.4094653, 0, 9, "poleve"),
-    GpsCoordinate(46.3297037, 16.3973263, 0, 9, "kursanec")
-]
+last_location = None
+new_location = None
 
 
+@dump_func(pexit=True)
 def configure():
-    print("GPS configure start")
     uart.write(bytes([0xB5, 0x62, 0x06, 0x04, 0x04, 0x00,
                       0xFF, 0xB9, 0x00, 0x00, 0xC6, 0x8B]))  # CFG-RST
     sleep_ms(1000)
@@ -68,13 +57,12 @@ def configure():
     uart.read()
     sleep_ms(3000)  # dont remove this
     uart.read()
-    print("GPS configure end")
 
 
-def parse_binary_data(data):
-    coordinate = None
+def parse_location(data):
+    location = None
     if data:
-        print("".join(["%02X" % (d) for d in data]))
+        #print("".join(["%02X" % (d) for d in data]))
         if data[0] == 0xB5 and data[1] == 0x62 and len(data) == 36:
             # 0U4-iTOWmsGPS Millisecond Time of Week
             time = int(unpack("<L", data[6:10])[0] / 1000)
@@ -98,8 +86,21 @@ def parse_binary_data(data):
             vAcc = unpack("<L", data[30:34])[0]
             # print(data.decode().strip())
             # print(time, lat, lon, height, hMSL, hAcc, vAcc)
-            coordinate = GpsCoordinate(lat, lon, time, hAcc)
-    return coordinate
+            location = Location(lat, lon, time, hAcc)
+    return location
+
+
+def calculate_speed(location):
+    global last_location
+    speed = 0.0
+    if last_location:
+        distance_km = get_distance(location, last_location)
+        time_h = (location.timestamp - last_location.timestamp) / \
+            1000 / 60 / 60
+        if time_h != 0.0:
+            speed = distance_km / time_h
+    last_location = location
+    return speed
 
 
 def init():
@@ -107,34 +108,18 @@ def init():
 
 
 def loop():
-    #gps_coordinate = parse_binary_data(uart.read())
-    gps_coordinate = test_coordinate[selected_coordinate]
-    if gps_coordinate:
-        lines = []
-        if (gps_coordinate.hacc <= 10):
-            lines.append("STATUS: GOOD")
-        elif (gps_coordinate.hacc <= 100):
-            lines.append("STATUS: BAD")
-        else:
-            lines.append("STATUS: UGLY")
-        lines.append("TIME: %d" % (gps_coordinate.time))
-        lines.append("LAT: %f" % (gps_coordinate.lat))
-        lines.append("LON: %f" % (gps_coordinate.lon))
-        lines.append("HACC: %d" % (gps_coordinate.hacc))
-        if (gps_coordinate.hacc < 30):
-            nearest_station = stations.get_nearest_station(gps_coordinate)
-            distance = stations.get_distance(gps_coordinate, nearest_station)
-            lines.append("%.2fkm in %s" % (distance, nearest_station.name))
-            if (distance < 0.2):
-                if not pwm.is_beep():
-                    pwm.set_beep(True)
-            else:
-                if pwm.is_beep():
-                    pwm.set_beep(False)
-        else:
-            if pwm.is_beep():
-                pwm.set_beep(False)
-        display_lines(lines)
-    else:
-        if pwm.is_beep():
-            pwm.set_beep(False)
+    location = parse_location(uart.read())
+    if location:
+        location.timestamp = get_millis()
+        location.speed = calculate_speed(location)
+        global new_location
+        new_location = location
+
+
+def get_location():
+    global new_location
+    if new_location:
+        temp = new_location
+        new_location = None
+        return temp
+    return None

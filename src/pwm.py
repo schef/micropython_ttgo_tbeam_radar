@@ -1,12 +1,13 @@
 import machine
 from utime import sleep_ms
 from common import dump_func, get_millis, millis_passed
+from specific import TESTING
 
 current_status = False
 pwm_pin = None
 timestamp = 0
 FREQ = 800
-DUTY = 2
+DUTY = (2, 512)[TESTING]
 
 
 @dump_func()

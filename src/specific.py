@@ -1,22 +1,69 @@
 from math import radians
+from math import sin, cos, sqrt, atan2, radians
+from enum import Enum
+
+TESTING = True
+# approximate radius of earth in km
+R = 6373.0
 
 
-class StationCoordinate():
-    def __init__(self, lat, lon, name, speed):
+class LocationStatus(Enum):
+    GOOD = "GOOD",
+    BAD = "BAD",
+    UGLY = "UGLY"
+
+
+class Coordinate():
+    def __init__(self, lat, lon):
         self.lat = lat
         self.lon = lon
         self.rlat = radians(lat)
         self.rlon = radians(lon)
+
+
+class Station(Coordinate):
+    def __init__(self, lat, lon, name, speed):
+        super().__init__(lat, lon)
         self.name = name
         self.speed = speed
 
 
-class GpsCoordinate():
-    def __init__(self, lat, lon, time, hacc, name = ""):
-        self.lat = lat
-        self.lon = lon
-        self.rlat = radians(lat)
-        self.rlon = radians(lon)
+class Location(Coordinate):
+    def __init__(self, lat, lon, time, hacc):
+        super().__init__(lat, lon)
         self.time = time
         self.hacc = hacc
-        self.name = name
+        self.speed = 0.0
+        self.timestamp = 0
+
+
+def get_distance(coordinate_from, coordinate_to):
+    dlon = coordinate_from.rlon - coordinate_to.rlon
+    dlat = coordinate_from.rlat - coordinate_to.rlat
+
+    a = sin(dlat / 2)**2 + cos(coordinate_to.rlat) * \
+        cos(coordinate_from.rlat) * sin(dlon / 2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    distance = R * c
+    return distance
+
+
+def get_nearest_station(coordinate_from, stations):
+    nearest_station = None
+    smallest_distance = 1000.0
+    for station in stations:
+        distance = get_distance(coordinate_from, station)
+        if distance < smallest_distance:
+            smallest_distance = distance
+            nearest_station = station
+    return nearest_station
+
+
+def get_status(location):
+    if (location.hacc <= 10):
+        return LocationStatus.GOOD
+    elif (location.hacc <= 100):
+        return LocationStatus.BAD
+    else:
+        return LocationStatus.UGLY
