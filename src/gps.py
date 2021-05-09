@@ -77,13 +77,13 @@ def parse_location(data):
             height = unpack("<l", data[18:22])[0]
             # I4-hMSLmmHeight above mean sea level20
 
-            hMSL = unpack("<l", data[22:26])[0]
+            hMSL = (unpack("<l", data[22:26])[0]) / 1000
             # U4-hAccmmHorizontal Accuracy Estimate24
 
-            hAcc = unpack("<L", data[26:30])[0]
+            hAcc = (unpack("<L", data[26:30])[0]) / 1000
             # U4-vAccmmVertical Accuracy Estimate
 
-            vAcc = unpack("<L", data[30:34])[0]
+            vAcc = (unpack("<L", data[30:34])[0]) / 1000
             # print(data.decode().strip())
             # print(time, lat, lon, height, hMSL, hAcc, vAcc)
             location = Location(lat, lon, time, hAcc)
