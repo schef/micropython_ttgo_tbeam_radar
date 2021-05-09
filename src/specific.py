@@ -1,13 +1,12 @@
 from math import radians
 from math import sin, cos, sqrt, atan2, radians
-from enum import Enum
 
-TESTING = True
+TESTING = False
 # approximate radius of earth in km
 R = 6373.0
 
 
-class LocationStatus(Enum):
+class LocationStatus():
     GOOD = "GOOD",
     BAD = "BAD",
     UGLY = "UGLY"
@@ -29,7 +28,7 @@ class Station(Coordinate):
 
 
 class Location(Coordinate):
-    def __init__(self, lat, lon, time, hacc):
+    def __init__(self, lat, lon, time = 0, hacc = 10):
         super().__init__(lat, lon)
         self.time = time
         self.hacc = hacc

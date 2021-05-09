@@ -1,7 +1,7 @@
 from utime import sleep_ms
 from struct import unpack
 from common import create_uart, get_millis, dump_func
-from specific import Location, get_distance
+from specific import Location, get_distance, TESTING
 
 uart = create_uart(12, 34)
 last_location = None
@@ -108,6 +108,8 @@ def init():
 
 
 def loop():
+    if TESTING:
+        return 
     location = parse_location(uart.read())
     if location:
         location.timestamp = get_millis()
@@ -123,3 +125,7 @@ def get_location():
         new_location = None
         return temp
     return None
+    
+def set_location(location):
+    global new_location
+    new_location = location 
