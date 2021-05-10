@@ -68,10 +68,10 @@ def parse_location(data):
             time = int(unpack("<L", data[6:10])[0] / 1000)
 
             # 4I41e-7londegLongitude8I
-            lat = unpack("<l", data[10:14])[0] * 10 ** -7
+            lon = unpack("<l", data[10:14])[0] * 10 ** -7
 
             # 41e-7latdegLatitude12
-            lon = unpack("<l", data[14:18])[0] * 10 ** -7
+            lat = unpack("<l", data[14:18])[0] * 10 ** -7
 
             # I4-heightmmHeight above Ellipsoid16
             height = unpack("<l", data[18:22])[0]

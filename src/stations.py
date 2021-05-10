@@ -39,7 +39,7 @@ def loop():
                 distance = get_distance(location, nearest_station)
                 lines.append("%.1fkm in %s" % (distance, nearest_station.name))
                 lines.append("%.1fkm/h" % (location.speed))
-                if (distance < 0.2):
+                if (distance <= 0.3):
                     if not pwm.is_beep():
                         pwm.set_beep(True)
                 else:
