@@ -52,7 +52,8 @@ def loop():
                 pwm.set_beep(False)
         oled.display_lines(lines)
         
-    if millis_passed(beep_off_if_no_location_timestamp) > 3000:
-        print("No location in 3 seconds, turning off")
+    if beep_off_if_no_location_timestamp != 0 and millis_passed(beep_off_if_no_location_timestamp) > 10000:
+        beep_off_if_no_location_timestamp = get_millis()
+        print("No location in 10 seconds, turning off")
         if pwm.is_beep():
             pwm.set_beep(False)

@@ -95,10 +95,10 @@ def calculate_speed(location):
     speed = 0.0
     if last_location:
         distance_m = get_distance(location, last_location) * 1000.0
-        time_s = int((location.timestamp - last_location.timestamp) / 1000) * 1.0
-        if time_s != 0.0:
-            speed = distance_m / (time_s)
-            speed /= 0.27777777777778
+        time_s = (location.timestamp - last_location.timestamp) / 1000.0
+        if time_s > 0.0:
+            speed = distance_m / time_s
+            speed = speed * 3.6
     last_location = location
     return speed
 
@@ -127,5 +127,7 @@ def get_location():
     return None
     
 def set_location(location):
+    location.timestamp = get_millis()
+    location.speed = calculate_speed(location)
     global new_location
-    new_location = location 
+    new_location = location

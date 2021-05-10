@@ -6,12 +6,6 @@ TESTING = False
 R = 6373.0
 
 
-class LocationStatus():
-    GOOD = "GOOD",
-    BAD = "BAD",
-    UGLY = "UGLY"
-
-
 class Coordinate():
     def __init__(self, lat, lon):
         self.lat = lat
@@ -50,10 +44,10 @@ def get_distance(coordinate_from, coordinate_to):
 
 def get_nearest_station(coordinate_from, stations):
     nearest_station = None
-    smallest_distance = -1.0
+    smallest_distance = 99999.0
     for station in stations:
         distance = get_distance(coordinate_from, station)
-        if distance < smallest_distance or distance != -1.0:
+        if distance < smallest_distance:
             smallest_distance = distance
             nearest_station = station
     return nearest_station
@@ -61,8 +55,8 @@ def get_nearest_station(coordinate_from, stations):
 
 def get_status(location):
     if (location.hacc <= 10):
-        return LocationStatus.GOOD
+        return "GOOD"
     elif (location.hacc <= 100):
-        return LocationStatus.BAD
+        return "BAD"
     else:
-        return LocationStatus.UGLY
+        return "UGLY"

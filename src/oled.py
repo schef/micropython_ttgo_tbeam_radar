@@ -37,4 +37,5 @@ def display_boot():
     display_lines(["BOOT", "v0.1.0"])
 
 def init():
+    #oled.invert(True)
     display_boot()
