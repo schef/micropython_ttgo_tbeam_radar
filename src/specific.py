@@ -50,10 +50,10 @@ def get_distance(coordinate_from, coordinate_to):
 
 def get_nearest_station(coordinate_from, stations):
     nearest_station = None
-    smallest_distance = 1000.0
+    smallest_distance = -1.0
     for station in stations:
         distance = get_distance(coordinate_from, station)
-        if distance < smallest_distance:
+        if distance < smallest_distance or distance != -1.0:
             smallest_distance = distance
             nearest_station = station
     return nearest_station

@@ -4,7 +4,7 @@ import oled
 from gps import get_location
 from common import get_millis, millis_passed
 
-last_location_timestamp = 0
+beep_off_if_no_location_timestamp = 0
 
 stations = [
     Station(46.370007, 16.374832, "Nedelisce, Aqua", 50),
@@ -24,31 +24,35 @@ stations = [
 ]
 
 def loop():
-    global last_location_timestamp
+    global beep_off_if_no_location_timestamp
     location = get_location()
     if location:
-        last_location_timestamp = get_millis()
+        beep_off_if_no_location_timestamp = get_millis()
         lines = []
         lines.append("%s:%d" % (get_status(location), location.hacc))
         lines.append("TIME: %d" % (location.time))
         lines.append("LAT: %f" % (location.lat))
         lines.append("LON: %f" % (location.lon))
-        if (get_status(location) in [LocationStatus.BAD, LocationStatus.GOOD]):
+        if (location.hacc <= 100):
             nearest_station = get_nearest_station(location, stations)
-            distance = get_distance(location, nearest_station)
-            lines.append("%.1fkm in %s" % (distance, nearest_station.name))
-            lines.append("%.1fkm/h" % (location.speed))
-            if (distance < 0.2):
-                if not pwm.is_beep():
-                    pwm.set_beep(True)
+            if nearest_station:
+                distance = get_distance(location, nearest_station)
+                lines.append("%.1fkm in %s" % (distance, nearest_station.name))
+                lines.append("%.1fkm/h" % (location.speed))
+                if (distance < 0.2):
+                    if not pwm.is_beep():
+                        pwm.set_beep(True)
+                else:
+                    if pwm.is_beep():
+                        pwm.set_beep(False)
             else:
-                if pwm.is_beep():
-                    pwm.set_beep(False)
+                print("ERROR: no nearest station?")
         else:
             if pwm.is_beep():
                 pwm.set_beep(False)
         oled.display_lines(lines)
-    else:
-        if millis_passed(last_location_timestamp) > 3000:
-            if pwm.is_beep():
-                pwm.set_beep(False)
+        
+    if millis_passed(beep_off_if_no_location_timestamp) > 3000:
+        print("No location in 3 seconds, turning off")
+        if pwm.is_beep():
+            pwm.set_beep(False)

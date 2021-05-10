@@ -77,13 +77,13 @@ def parse_location(data):
             height = unpack("<l", data[18:22])[0]
             # I4-hMSLmmHeight above mean sea level20
 
-            hMSL = (unpack("<l", data[22:26])[0]) / 1000
+            hMSL = int(unpack("<l", data[22:26])[0]) / 1000
             # U4-hAccmmHorizontal Accuracy Estimate24
 
-            hAcc = (unpack("<L", data[26:30])[0]) / 1000
+            hAcc = int(unpack("<L", data[26:30])[0]) / 1000
             # U4-vAccmmVertical Accuracy Estimate
 
-            vAcc = (unpack("<L", data[30:34])[0]) / 1000
+            vAcc = int(unpack("<L", data[30:34])[0]) / 1000
             # print(data.decode().strip())
             # print(time, lat, lon, height, hMSL, hAcc, vAcc)
             location = Location(lat, lon, time, hAcc)
@@ -94,11 +94,11 @@ def calculate_speed(location):
     global last_location
     speed = 0.0
     if last_location:
-        distance_km = get_distance(location, last_location)
-        time_h = (location.timestamp - last_location.timestamp) / \
-            1000 / 60 / 60
-        if time_h != 0.0:
-            speed = distance_km / time_h
+        distance_m = get_distance(location, last_location) * 1000.0
+        time_s = int((location.timestamp - last_location.timestamp) / 1000) * 1.0
+        if time_s != 0.0:
+            speed = distance_m / (time_s)
+            speed /= 0.27777777777778
     last_location = location
     return speed
 
