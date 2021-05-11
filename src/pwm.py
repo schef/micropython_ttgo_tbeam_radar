@@ -7,7 +7,8 @@ current_status = False
 pwm_pin = None
 timestamp = 0
 FREQ = 800
-DUTY = (2, 512)[TESTING]
+DUTY = 512
+#DUTY = 2
 
 
 @dump_func()

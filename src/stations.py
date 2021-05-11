@@ -27,13 +27,13 @@ def loop():
     global beep_off_if_no_location_timestamp
     location = get_location()
     if location:
-        beep_off_if_no_location_timestamp = get_millis()
         lines = []
         lines.append("%s:%d" % (get_status(location), location.hacc))
         lines.append("TIME: %d" % (location.time))
         lines.append("LAT: %f" % (location.lat))
         lines.append("LON: %f" % (location.lon))
         if (location.hacc <= 100):
+            beep_off_if_no_location_timestamp = get_millis()
             nearest_station = get_nearest_station(location, stations)
             if nearest_station:
                 distance = get_distance(location, nearest_station)
@@ -53,7 +53,7 @@ def loop():
         oled.display_lines(lines)
         
     if beep_off_if_no_location_timestamp != 0 and millis_passed(beep_off_if_no_location_timestamp) > 10000:
-        beep_off_if_no_location_timestamp = get_millis()
+        beep_off_if_no_location_timestamp = 0
         print("No location in 10 seconds, turning off")
         if pwm.is_beep():
             pwm.set_beep(False)
