@@ -4,6 +4,7 @@ import gps
 import pwm
 import stations
 from specific import Location
+import leds
 
 selected_coordinate = 0
 test_coordinate = [
@@ -160,10 +161,12 @@ if __name__ == "__main__":
     peripherals.register_button_callback_function(on_button_callback)
     pwm.init()
     oled.init()
+    leds.init()
     gps.init()
 
     while True:
         peripherals.loop()
         gps.loop()
         pwm.loop()
+        leds.loop()
         stations.loop()

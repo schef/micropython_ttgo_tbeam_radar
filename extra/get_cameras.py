@@ -88,7 +88,10 @@ class WebStation(Coordinate):
     def __init__(self, dictionary):
         super().__init__(float(dictionary["lat"]), float(dictionary["lng"]))
         self.name = "%s, %s, %s, %s" % (dictionary["ort"], dictionary["strasse"], dictionary["plz"], dictionary["id"])
-        self.speed = int(dictionary["vmax"])
+        try:
+            self.speed = int(dictionary["vmax"])
+        except:
+            self.speed = 0
 
     def __str__(self):
         return "Station(%f, %f, %i, \"%s\")," % (self.lat, self.lon, self.speed, get_clean_name(self.name))
@@ -121,7 +124,7 @@ def get_distance(coordinate_from, coordinate_to):
 
 
 if __name__ == "__main__":
-    raw_data = get_raw_data(46.4859993, 16.3086184, 46.1355817, 16.8162473)
+    raw_data = get_raw_data(46.5682297,15.3864043,45.3898267,16.9882823)
     r = requests.post(URL, data=raw_data, headers=PARAMS)
     data = r.json()
     stations = []

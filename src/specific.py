@@ -15,7 +15,7 @@ class Coordinate():
 
 
 class Station(Coordinate):
-    def __init__(self, lat, lon, name, speed):
+    def __init__(self, lat, lon, speed, name):
         super().__init__(lat, lon)
         self.name = name
         self.speed = speed
