@@ -8,7 +8,7 @@ last_location = None
 new_location = None
 
 
-@dump_func(pexit=True)
+@dump_func(pexit=True, timing=True)
 def configure():
     uart.write(bytes([0xB5, 0x62, 0x06, 0x04, 0x04, 0x00,
                       0xFF, 0xB9, 0x00, 0x00, 0xC6, 0x8B]))  # CFG-RST

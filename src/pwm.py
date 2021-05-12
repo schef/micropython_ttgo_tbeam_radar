@@ -6,9 +6,8 @@ from specific import TESTING
 current_status = False
 pwm_pin = None
 timestamp = 0
-FREQ = 800
-DUTY = 512
-#DUTY = 2
+FREQ = (4900, 800)[TESTING]
+DUTY = (512, 2)[TESTING]
 
 
 @dump_func()
@@ -17,6 +16,7 @@ def init():
     pwm_pin = machine.PWM(machine.Pin(2))
     pwm_pin.freq(FREQ)
     pwm_pin.duty(0)
+    print("config: freq[%d], duty[%d]" % (FREQ, DUTY))
 
 
 def set_beep(status):
@@ -44,3 +44,24 @@ def loop():
     else:
         if pwm_pin.duty():
             pwm_pin.duty(0)
+
+def find_freq():
+    init()
+    for freq in range(0, 8000, 100):
+        pwm_pin.freq(freq)
+        print(freq)
+        set_beep(True)
+        sleep_ms(100)
+        set_beep(False)
+        sleep_ms(900)
+        
+def test_config(freq, duty, times=3):
+    init()
+    pwm_pin.freq(freq)
+    pwm_pin.duty(duty)
+    for t in range(0, times):
+        print(freq)
+        set_beep(True)
+        sleep_ms(100)
+        set_beep(False)
+        sleep_ms(900)
